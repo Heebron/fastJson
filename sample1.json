@@ -1,0 +1,19 @@
+{
+    "people": {
+        "children": [true, "Haley", "Evan"],
+        "age": 47,
+        "up": null,
+        "first": "Ken",
+        "last": "Pratt",
+        "alive": true,
+        "cat": null,
+        "child": [{
+                "name": "ken"
+            }]
+    },
+    "more": false,
+    "less": true,
+    "ratio": 193.7,
+    "lat": -122.6,
+    "lon": 100
+}
