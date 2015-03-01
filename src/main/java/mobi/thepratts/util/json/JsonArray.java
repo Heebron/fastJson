@@ -34,9 +34,17 @@ class JsonArray implements JValue<List<?>> {
     @Override
     public String toString() {
         StringJoiner sj = new StringJoiner(",", "[", "]");
+
+        // Optimized output.
         value.stream().forEach(e -> {
-            if (e instanceof JValue) {
+            if (e == null) {
+                sj.add("{}");
+            } else if (e instanceof JValue) { // This means a JSONObject
                 sj.add(((JValue) e).toString());
+            } else if (e instanceof Boolean) {
+                sj.add(e.toString());
+            } else if (e instanceof Number) {
+                sj.add(e.toString());
             } else {
                 sj.add("\"" + JsonObject.escape(e.toString()) + "\"");
             }
@@ -47,5 +55,9 @@ class JsonArray implements JValue<List<?>> {
     @Override
     public List getValue() {
         return value;
+    }
+
+    public Object getValue(int index) {
+        return value.get(index);
     }
 }

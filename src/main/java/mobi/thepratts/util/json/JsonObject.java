@@ -52,8 +52,8 @@ public class JsonObject implements JValue {
         return map;
     }
 
-    public void put(String key, JsonObject doc) {
-        map.put(key, doc);
+    public void put(String key, JValue objOrArray) {
+        map.put(key, objOrArray);
     }
 
     public void put(String key, List<? extends Object> values) {
@@ -132,42 +132,53 @@ public class JsonObject implements JValue {
 
         // The tokens of JSON
         BOD,
-        L_BRACKET('['), R_BRACKET(']'),
-        L_BRACE('{'), R_BRACE('}'),
-        COLON(':'), QUOTE('"'),
+        STRING,
+        EOD,
+        L_BRACKET('['),
+        R_BRACKET(']'),
+        L_BRACE('{'),
+        R_BRACE('}'),
+        COLON(':'),
+        QUOTE('"'),
         COMMA(','),
-        STRING, TRUE, FALSE, NULL, NUMBER,
-        EOD;
-        private final Character c;
+        TRUE("Tt"),
+        FALSE("Ff"),
+        NULL("Nn"),
+        NUMBER("-0123456789.");
+
+        private final String mappings;
 
         LEXEME() {
-            this.c = null;
+            this.mappings = null;
         }
 
         LEXEME(Character c) {
-            this.c = c;
+            this.mappings = c + "";
         }
 
-        static final LEXEME[] map = new LEXEME[92];
+        LEXEME(String mappings) {
+            this.mappings = mappings;
+        }
+
+        static final LEXEME[] map = new LEXEME[126];
 
         static {
+            // Set up the lookup table.
             for (LEXEME t : LEXEME.values()) {
-                if (t.c != null) {
-                    map[t.c - 34] = t;
+                if (t.mappings != null) {
+                    for (int i = 0; i < t.mappings.length(); i++) {
+                        map[t.mappings.charAt(i)] = t;
+                    }
                 }
             }
         }
 
         static LEXEME map(int ch) {
-            int index = ch - 34;
-            if (index < 0 || index > 91) {
-                return null;
-            }
-            return map[index];
+            return map[ch];
         }
     };
 
-    static JsonObject parse(final Reader doc) throws IOException {
+    static JValue parse(final Reader doc) throws IOException {
 
         class Lexer {
 
@@ -187,6 +198,10 @@ public class JsonObject implements JValue {
 
                 int lookAhead() {
                     return next;
+                }
+
+                private void read(int i) {
+                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
                 }
             }
 
@@ -211,9 +226,8 @@ public class JsonObject implements JValue {
                     if (ch == '\\') {
                         if (reader.lookAhead() == -1) {
                             throw new IOException("End of document reached in quote escape.");
-                        } else if (reader.lookAhead() != '"') {
-                            throw new IOException("Incorrect escape sequence \\" + reader.lookAhead());
                         }
+                        sb.append("\\");
                         ch = reader.read();
                     }
                     sb.append((char) ch);
@@ -221,35 +235,51 @@ public class JsonObject implements JValue {
                 value = sb.toString();
             }
 
+            private int unicode() throws IOException {
+                int total = 0;
+                for (int i = 3; i > -1; i--) {
+                    int ch = reader.read();
+                    if (ch == -1) {
+                        throw new IOException("End of document reached while parsing a unicode escape sequence.");
+                    }
+                    if (ch >= '0' && ch <= '9') {
+                        ch -= '0';
+                    } else {
+                        ch = ch | 0x20;
+                        if (ch >= 'A' && ch <= 'F') {
+                            ch -= 'A';
+                        }
+                    }
+                    if (ch < 0x0 || ch > 0xf) {
+                        throw new IOException("Invalid character in unicode escape sequence.");
+                    }
+                    total += (ch << i * 4);
+                }
+                return total;
+            }
+
             void nextToken() throws IOException {
                 int ch = reader.read();
+
                 if (ch == -1) {
                     token = EOD;
                     return;
                 }
+
                 token = LEXEME.map(ch);
-                if (token == null) {
-                    if (ch == 't' || ch == 'T') {
-                        token = TRUE;
+
+                switch (token) {
+                    case FALSE:
+                        reader.read();
+                    case NULL:
+                    case TRUE:
                         reader.read();
                         reader.read();
                         reader.read();
-                    } else if (ch == 'f' || ch == 'F') {
-                        token = FALSE;
-                        reader.read();
-                        reader.read();
-                        reader.read();
-                        reader.read();
-                    } else if (ch == 'n' || ch == 'N') {
-                        token = NULL;
-                        reader.read();
-                        reader.read();
-                        reader.read();
-                    } else {
-                        // Must be a number.
+                        break;
+                    case NUMBER:
                         sb.setLength(0);
                         isDecimal = false;
-
                         // index 0
                         if (ch == '-' || Character.isDigit(ch)) {
                             sb.append((char) ch);
@@ -275,8 +305,6 @@ public class JsonObject implements JValue {
                             }
                         }
                         value = sb.toString();
-                        token = NUMBER;
-                    }
                 }
 
                 // Consume trailing whitespace
@@ -284,14 +312,14 @@ public class JsonObject implements JValue {
             }
 
             void match(LEXEME nextToken) throws IOException {
-                if (nextToken.c != null || nextToken == TRUE || nextToken == FALSE || nextToken == NULL) {
+                if (nextToken == STRING) { // This is forced.
+                    nextString();
+                    token = STRING;
+                } else {
                     nextToken();
                     if (token != nextToken) {
                         throw new IOException("Expected '" + nextToken + "', but got '" + token + "'.");
                     }
-                } else if (nextToken == STRING) {
-                    nextString();
-                    token = STRING;
                 }
 
                 // Consume trailing whitespace
@@ -305,18 +333,13 @@ public class JsonObject implements JValue {
             }
 
             LEXEME lookAhead() {
-                LEXEME ret = LEXEME.map(reader.lookAhead());
-                if (ret != null) {
-                    return ret;
-                }
-
-                int t = reader.lookAhead() | 0x20;
-                return t == 't' ? TRUE : t == 'f' ? FALSE : t == 'n' ? NULL : null;
+                return LEXEME.map(reader.lookAhead());
             }
 
             JsonObject object() throws IOException {
                 JsonObject top = new JsonObject();
 
+                out:
                 for (;;) {
                     // Process key.
                     match(QUOTE);
@@ -325,44 +348,55 @@ public class JsonObject implements JValue {
                     match(QUOTE);
                     match(COLON);
                     nextToken();
+
                     // Process value.
-                    if (token == TRUE) {
-                        top.put(key, true);
-                    } else if (token == FALSE) {
-                        top.put(key, false);
-                    } else if (token == NULL) {
-                        top.put(key, new JsonObject());
-                    } else if (token == QUOTE) {
-                        match(STRING);
-                        top.put(key, value);
-                        match(QUOTE);
-                    } else if (token == L_BRACKET) {
-                        top.put(key, array());
-                        match(R_BRACKET);
-                    } else if (token == L_BRACE) {
-                        top.put(key, object());
-                        match(R_BRACE);
-                    } else if (token == NUMBER) {
-                        if (isDecimal) {
-                            top.put(key, Double.valueOf(value));
-                        } else {
-                            top.put(key, Long.valueOf(value));
-                        }
+                    switch (token) {
+                        case TRUE:
+                            top.put(key, true);
+                            break;
+                        case FALSE:
+                            top.put(key, false);
+                            break;
+                        case QUOTE:
+                            match(STRING);
+                            top.put(key, value);
+                            match(QUOTE);
+                            break;
+                        case L_BRACKET:
+                            top.put(key, array());
+                            match(R_BRACKET);
+                            break;
+                        case L_BRACE:
+                            top.put(key, object());
+                            match(R_BRACE);
+                            break;
+                        case NULL:
+                            top.put(key, new JsonObject());
+                            break;
+                        case NUMBER:
+                            if (isDecimal) {
+                                top.put(key, Double.parseDouble(value));
+                            } else {
+                                top.put(key, Long.parseLong(value));
+                            }
+                            break;
+                        default:
+                            // Should never get here.
+                            throw new IOException("Invalid token: " + token);
                     }
 
-                    if (lookAhead() == COMMA) {
-                        match(COMMA);
-                        continue;
+                    if (lookAhead() != COMMA) {
+                        break;
                     }
-                    break;
+
+                    match(COMMA);
                 }
                 return top;
             }
 
-            private List array() throws IOException {
+            private JsonArray array() throws IOException {
                 List list = new ArrayList<>();
 
-                // TODO: use a switch stmt and make boolean and null work in arrays.
                 out:
                 for (;;) {
                     switch (lookAhead()) {
@@ -374,7 +408,7 @@ public class JsonObject implements JValue {
                             break;
                         case L_BRACKET: // Embedded arry
                             match(L_BRACKET);
-                            list.add(new JsonArray(array()));
+                            list.add(array());
                             match(R_BRACKET);
                             break;
                         case L_BRACE: // Embedded object
@@ -383,16 +417,24 @@ public class JsonObject implements JValue {
                             match(R_BRACE);
                             break;
                         case TRUE:
-                            list.add(true);
                             match(TRUE);
+                            list.add(true);
                             break;
                         case FALSE:
-                            list.add(false);
                             match(FALSE);
+                            list.add(false);
                             break;
                         case NULL:
-                            list.add(null);
                             match(NULL);
+                            list.add(null);
+                            break;
+                        case NUMBER:
+                            match(NUMBER);
+                            if (isDecimal) {
+                                list.add(Double.parseDouble(value));
+                            } else {
+                                list.add(Long.parseLong(value));
+                            }
                             break;
                         case COMMA:
                             match(COMMA);
@@ -401,15 +443,26 @@ public class JsonObject implements JValue {
                             break out;
                     }
                 }
-                return list;
+                return new JsonArray(list);
             }
         }
 
         Lexer lexer = new Lexer();
         // Start with lexer at BOD;
-        lexer.match(L_BRACE);
-        JsonObject obj = lexer.object();
-        lexer.match(R_BRACE);
-        return obj;
+
+        JValue ret;
+        // Do we have an object or an array?
+        if (lexer.lookAhead() == L_BRACE) {
+            lexer.match(L_BRACE);
+            ret = lexer.object();
+            lexer.match(R_BRACE);
+        } else if (lexer.lookAhead() == L_BRACKET) {
+            lexer.match(L_BRACKET);
+            ret = lexer.array();
+            lexer.match(R_BRACKET);
+        } else {
+            throw new IOException("Can't parse JSON document.  Incorrect first token: " + lexer.lookAhead() + ".");
+        }
+        return ret;
     }
 }

@@ -34,12 +34,12 @@ public class FastJSON {
     public static void main(String[] args) throws IOException {
         System.out.println("Output!");
 
-        JsonObject top = JsonObject.parse(new FileReader("sample1.json"));
+        JValue top = JsonObject.parse(new FileReader("sample1.json"));
 
         System.out.println(top);
 
-        System.out.println(top.getAsString("people.age"));
-
-        System.out.println((List) top.get("people.children"));
+//        System.out.println(top.getAsString("people.age"));
+//
+//        System.out.println((List) top.get("people.children"));
     }
 }
