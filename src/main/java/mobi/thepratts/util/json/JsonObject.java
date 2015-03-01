@@ -178,7 +178,7 @@ public class JsonObject implements JValue {
         }
     };
 
-    static JValue parse(final Reader doc) throws IOException {
+    public static JValue parse(final Reader doc) throws IOException {
 
         class Lexer {
 
