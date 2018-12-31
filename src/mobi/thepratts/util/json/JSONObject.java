@@ -1,19 +1,25 @@
 /*
- * Copyright (C) 2015 kpratt
+ * MIT License
  *
- * This program is free software; you can redistribute it and/or
- * modify it under the terms of the GNU General Public License
- * as published by the Free Software Foundation; either version 2
- * of the License, or (at your option) any later version.
+ * Copyright (c) 2015 Ken Pratt
  *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 package mobi.thepratts.util.json;
 
@@ -24,26 +30,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-import static mobi.thepratts.util.json.JsonObject.LEXEME.BOD;
-import static mobi.thepratts.util.json.JsonObject.LEXEME.COLON;
-import static mobi.thepratts.util.json.JsonObject.LEXEME.COMMA;
-import static mobi.thepratts.util.json.JsonObject.LEXEME.EOD;
-import static mobi.thepratts.util.json.JsonObject.LEXEME.FALSE;
-import static mobi.thepratts.util.json.JsonObject.LEXEME.L_BRACE;
-import static mobi.thepratts.util.json.JsonObject.LEXEME.L_BRACKET;
-import static mobi.thepratts.util.json.JsonObject.LEXEME.NULL;
-import static mobi.thepratts.util.json.JsonObject.LEXEME.NUMBER;
-import static mobi.thepratts.util.json.JsonObject.LEXEME.QUOTE;
-import static mobi.thepratts.util.json.JsonObject.LEXEME.R_BRACE;
-import static mobi.thepratts.util.json.JsonObject.LEXEME.R_BRACKET;
-import static mobi.thepratts.util.json.JsonObject.LEXEME.STRING;
-import static mobi.thepratts.util.json.JsonObject.LEXEME.TRUE;
+import static mobi.thepratts.util.json.JSONObject.LEXEME.BOD;
+import static mobi.thepratts.util.json.JSONObject.LEXEME.COLON;
+import static mobi.thepratts.util.json.JSONObject.LEXEME.COMMA;
+import static mobi.thepratts.util.json.JSONObject.LEXEME.EOD;
+import static mobi.thepratts.util.json.JSONObject.LEXEME.FALSE;
+import static mobi.thepratts.util.json.JSONObject.LEXEME.L_BRACE;
+import static mobi.thepratts.util.json.JSONObject.LEXEME.L_BRACKET;
+import static mobi.thepratts.util.json.JSONObject.LEXEME.NULL;
+import static mobi.thepratts.util.json.JSONObject.LEXEME.NUMBER;
+import static mobi.thepratts.util.json.JSONObject.LEXEME.QUOTE;
+import static mobi.thepratts.util.json.JSONObject.LEXEME.R_BRACE;
+import static mobi.thepratts.util.json.JSONObject.LEXEME.R_BRACKET;
+import static mobi.thepratts.util.json.JSONObject.LEXEME.STRING;
+import static mobi.thepratts.util.json.JSONObject.LEXEME.TRUE;
 
 /**
  *
  * @author Ken Pratt
  */
-public class JsonObject implements JValue {
+public class JSONObject implements JValue {
 
     final HashMap<String, JValue> map = new HashMap<>();
 
@@ -57,23 +63,23 @@ public class JsonObject implements JValue {
     }
 
     public void put(String key, List<? extends Object> values) {
-        map.put(key, new JsonArray(values));
+        map.put(key, new JSONArray(values));
     }
 
     public void put(String key, String value) {
-        map.put(key, new JsonEscaped(value));
+        map.put(key, new JSONEscaped(value));
     }
 
     public void put(String key, boolean value) {
-        map.put(key, new JsonNotQuoted(value));
+        map.put(key, new JSONNotQuoted(value));
     }
 
     public void put(String key, Number value) {
-        map.put(key, new JsonNotQuoted(value));
+        map.put(key, new JSONNotQuoted(value));
     }
 
     public void put(String key, Instant time) {
-        map.put(key, new JsonNotEscaped(time));
+        map.put(key, new JSONNotEscaped(time));
     }
 
     public boolean hasKey(String key) {
@@ -92,10 +98,10 @@ public class JsonObject implements JValue {
             if (j == null) {
                 throw new IllegalArgumentException("Key does not exist.");
             }
-            if (!(j instanceof JsonObject)) {
+            if (!(j instanceof JSONObject)) {
                 throw new IllegalArgumentException("Key's value is not a JSONObject.");
             }
-            return ((JsonObject) j).walks(path.substring(index + 1));
+            return ((JSONObject) j).walks(path.substring(index + 1));
         }
     }
 
@@ -336,8 +342,8 @@ public class JsonObject implements JValue {
                 return LEXEME.map(reader.lookAhead());
             }
 
-            JsonObject object() throws IOException {
-                JsonObject top = new JsonObject();
+            JSONObject object() throws IOException {
+                JSONObject top = new JSONObject();
 
                 out:
                 for (;;) {
@@ -371,7 +377,7 @@ public class JsonObject implements JValue {
                             match(R_BRACE);
                             break;
                         case NULL:
-                            top.put(key, new JsonObject());
+                            top.put(key, new JSONObject());
                             break;
                         case NUMBER:
                             if (isDecimal) {
@@ -394,7 +400,7 @@ public class JsonObject implements JValue {
                 return top;
             }
 
-            private JsonArray array() throws IOException {
+            private JSONArray array() throws IOException {
                 List list = new ArrayList<>();
 
                 out:
@@ -443,7 +449,7 @@ public class JsonObject implements JValue {
                             break out;
                     }
                 }
-                return new JsonArray(list);
+                return new JSONArray(list);
             }
         }
 
