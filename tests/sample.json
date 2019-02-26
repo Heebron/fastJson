@@ -53,6 +53,8 @@
         "hex": "#0F0"
       }
     },
-  ]
+  ],
+  "sample":[["red","blue"],["green","black"],[],null],
+    "fred":null
 }
 

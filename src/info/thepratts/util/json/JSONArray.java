@@ -21,28 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package mobi.thepratts.util.json;
+package info.thepratts.util.json;
+
+import java.util.List;
+import java.util.StringJoiner;
 
 /**
  *
  * @author kpratt
  */
-class JSONNotEscaped<T> implements JValue<T> {
+class JSONArray {
 
-    private final T value;
-
-    public JSONNotEscaped(T value) {
+    public JSONArray(List<?> value) {
         this.value = value;
     }
+    List<?> value;
 
     @Override
     public String toString() {
-        return "\"" + value.toString() + "\"";
+        StringJoiner sj = new StringJoiner(",", "[", "]");
+
+        // Optimized output.
+        value.stream().forEach(e -> {
+            if (e == null) {
+                sj.add("null");
+            } else if (e instanceof String) {
+                sj.add("\"" + JSONObject.escape(e.toString()) + "\"");
+            } else {
+                sj.add(e.toString());
+            }
+        });
+        return sj.toString();
     }
 
-    @Override
-    public T getValue() {
-        return value;
+    public Object getValue(int index) {
+        return value.get(index);
     }
-
 }

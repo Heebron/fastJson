@@ -21,49 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package mobi.thepratts.util.json;
-
-import java.util.List;
-import java.util.StringJoiner;
+package info.thepratts.util.json;
 
 /**
  *
  * @author kpratt
  */
-class JSONArray implements JValue<List<?>> {
+class JSONEscaped<T> {
 
-    public JSONArray(List<?> value) {
+    private final T value;
+
+    public JSONEscaped(T value) {
         this.value = value;
     }
-    List<?> value;
 
     @Override
     public String toString() {
-        StringJoiner sj = new StringJoiner(",", "[", "]");
-
-        // Optimized output.
-        value.stream().forEach(e -> {
-            if (e == null) {
-                sj.add("{}");
-            } else if (e instanceof JValue) { // This means a JSONObject
-                sj.add(((JValue) e).toString());
-            } else if (e instanceof Boolean) {
-                sj.add(e.toString());
-            } else if (e instanceof Number) {
-                sj.add(e.toString());
-            } else {
-                sj.add("\"" + JSONObject.escape(e.toString()) + "\"");
-            }
-        });
-        return sj.toString();
-    }
-
-    @Override
-    public List getValue() {
-        return value;
-    }
-
-    public Object getValue(int index) {
-        return value.get(index);
+        return "\"" + JSONObject.escape(value.toString()) + "\"";
     }
 }

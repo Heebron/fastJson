@@ -21,80 +21,79 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package mobi.thepratts.util.json;
+package info.thepratts.util.json;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
-import static mobi.thepratts.util.json.JSONObject.LEXEME.BOD;
-import static mobi.thepratts.util.json.JSONObject.LEXEME.COLON;
-import static mobi.thepratts.util.json.JSONObject.LEXEME.COMMA;
-import static mobi.thepratts.util.json.JSONObject.LEXEME.EOD;
-import static mobi.thepratts.util.json.JSONObject.LEXEME.FALSE;
-import static mobi.thepratts.util.json.JSONObject.LEXEME.L_BRACE;
-import static mobi.thepratts.util.json.JSONObject.LEXEME.L_BRACKET;
-import static mobi.thepratts.util.json.JSONObject.LEXEME.NULL;
-import static mobi.thepratts.util.json.JSONObject.LEXEME.NUMBER;
-import static mobi.thepratts.util.json.JSONObject.LEXEME.QUOTE;
-import static mobi.thepratts.util.json.JSONObject.LEXEME.R_BRACE;
-import static mobi.thepratts.util.json.JSONObject.LEXEME.R_BRACKET;
-import static mobi.thepratts.util.json.JSONObject.LEXEME.STRING;
-import static mobi.thepratts.util.json.JSONObject.LEXEME.TRUE;
+import static info.thepratts.util.json.JSONObject.LEXEME.BOD;
+import static info.thepratts.util.json.JSONObject.LEXEME.COLON;
+import static info.thepratts.util.json.JSONObject.LEXEME.COMMA;
+import static info.thepratts.util.json.JSONObject.LEXEME.EOD;
+import static info.thepratts.util.json.JSONObject.LEXEME.FALSE;
+import static info.thepratts.util.json.JSONObject.LEXEME.L_BRACE;
+import static info.thepratts.util.json.JSONObject.LEXEME.L_BRACKET;
+import static info.thepratts.util.json.JSONObject.LEXEME.NULL;
+import static info.thepratts.util.json.JSONObject.LEXEME.NUMBER;
+import static info.thepratts.util.json.JSONObject.LEXEME.QUOTE;
+import static info.thepratts.util.json.JSONObject.LEXEME.R_BRACE;
+import static info.thepratts.util.json.JSONObject.LEXEME.R_BRACKET;
+import static info.thepratts.util.json.JSONObject.LEXEME.STRING;
+import static info.thepratts.util.json.JSONObject.LEXEME.TRUE;
+import java.util.Set;
 
 /**
  *
  * @author Ken Pratt
  */
-public class JSONObject implements JValue {
+public class JSONObject {
 
-    final HashMap<String, JValue> map = new HashMap<>();
+    final HashMap<String, Object> map = new HashMap<>();
 
-    @Override
-    public Object getValue() {
-        return map;
+    public void put(String key, Object obj) {
+        map.put(key, obj);
     }
 
-    public void put(String key, JValue objOrArray) {
-        map.put(key, objOrArray);
-    }
-
-    public void put(String key, List<? extends Object> values) {
-        map.put(key, new JSONArray(values));
-    }
-
-    public void put(String key, String value) {
-        map.put(key, new JSONEscaped(value));
-    }
-
-    public void put(String key, boolean value) {
-        map.put(key, new JSONNotQuoted(value));
-    }
-
-    public void put(String key, Number value) {
-        map.put(key, new JSONNotQuoted(value));
-    }
-
-    public void put(String key, Instant time) {
-        map.put(key, new JSONNotEscaped(time));
-    }
-
+//    public void put(String key, List<? extends Object> values) {
+//        map.put(key, new JSONArray(values));
+//    }
+//
+//    public void put(String key, String value) {
+//        map.put(key, new JSONEscaped(value));
+//    }
+//
+//    public void put(String key, boolean value) {
+//        map.put(key, new JSONNotQuoted(value));
+//    }
+//
+//    public void put(String key, Number value) {
+//        map.put(key, new JSONNotQuoted(value));
+//    }
+//
+//    public void put(String key, Instant time) {
+//        map.put(key, new JSONNotEscaped(time));
+//    }
+//
     public boolean hasKey(String key) {
         return map.containsKey(key);
     }
 
-    private JValue walks(String path) {
+    public Set<String> keySet() {
+        return map.keySet();
+    }
+
+    private <T> T walks(String path) {
         int index = path.indexOf(".");
         if (index == -1) {
             if (!map.containsKey(path)) {
                 throw new IllegalArgumentException("Key does not exist.");
             }
-            return map.get(path);
+            return (T) map.get(path);
         } else {
-            JValue j = map.get(path.substring(0, index));
+            T j = (T) map.get(path.substring(0, index));
             if (j == null) {
                 throw new IllegalArgumentException("Key does not exist.");
             }
@@ -105,29 +104,50 @@ public class JSONObject implements JValue {
         }
     }
 
-    public String getAsString(String key) {
-        JValue ret = walks(key);
-        return ret.getValue().toString();
-    }
-
-    public Instant getAsInstant(String key) {
-        JValue ret = walks(key);
-        if (ret.getValue() instanceof Instant) {
-            return (Instant) ret.getValue();
-        } else {
-            return Instant.parse(ret.getValue().toString());
-        }
-    }
-
+//    public String getAsString(String key) {
+//        return walks(key).toString();
+//    }
+//
+//    public Instant getAsInstant(String key) {
+//        JValue ret = walks(key);
+//        if (ret.getValue() instanceof Instant) {
+//            return (Instant) ret.getValue();
+//        } else {
+//            return Instant.parse(ret.getValue().toString());
+//        }
+//    }
+//
+//    public Long getAsInt(String key) {
+//        JValue ret = walks(key);
+//        if (ret.getValue() instanceof Double) {
+//            return (Long) ret.getValue();
+//        } else {
+//            return Long.parseLong(ret.getValue().toString());
+//        }
+//    }
+//
+//    public Double getAsFloat(String key) {
+//        JValue ret = walks(key);
+//        if (ret.getValue() instanceof Double) {
+//            return (Double) ret.getValue();
+//        } else {
+//            return Double.parseDouble(ret.getValue().toString());
+//        }
+//    }
     public <T> T get(String key) {
-        JValue ret = walks(key);
-        return (T) ret.getValue();
+        return (T) map.get(key);
     }
 
     @Override
     public String toString() {
         return map.entrySet().stream().map(e -> "\"" + e.getKey() + "\":"
-                + e.getValue().toString()).collect(Collectors.joining(",", "{", "}"));
+                + (e.getValue() == null ? "null" : e.getValue() instanceof String ? "\"" + e.getValue() + "\"" : e.getValue().toString())).collect(Collectors.joining(",", "{", "}"));
+    }
+
+    private void insertSpaces(StringBuilder sb, int numSpaces) {
+        for (int i = 0; i < numSpaces; i++) {
+            sb.append(" ");
+        }
     }
 
     static String escape(String value) {
@@ -184,7 +204,7 @@ public class JSONObject implements JValue {
         }
     };
 
-    public static JValue parse(final Reader doc) throws IOException {
+    public static <T> T parse(final Reader doc) throws IOException {
 
         class Lexer {
 
@@ -206,9 +226,9 @@ public class JSONObject implements JValue {
                     return next;
                 }
 
-                private void read(int i) {
-                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                }
+//                private void read(int i) {
+//                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//                }
             }
 
             Lexer() throws IOException {
@@ -377,7 +397,7 @@ public class JSONObject implements JValue {
                             match(R_BRACE);
                             break;
                         case NULL:
-                            top.put(key, new JSONObject());
+                            top.put(key, null);
                             break;
                         case NUMBER:
                             if (isDecimal) {
@@ -456,18 +476,25 @@ public class JSONObject implements JValue {
         Lexer lexer = new Lexer();
         // Start with lexer at BOD;
 
-        JValue ret;
-        // Do we have an object or an array?
-        if (lexer.lookAhead() == L_BRACE) {
-            lexer.match(L_BRACE);
-            ret = lexer.object();
-            lexer.match(R_BRACE);
-        } else if (lexer.lookAhead() == L_BRACKET) {
-            lexer.match(L_BRACKET);
-            ret = lexer.array();
-            lexer.match(R_BRACKET);
-        } else {
+        T ret;
+        if (null == lexer.lookAhead()) {
             throw new IOException("Can't parse JSON document.  Incorrect first token: " + lexer.lookAhead() + ".");
+        } else // Do we have an object or an array?
+        {
+            switch (lexer.lookAhead()) {
+                case L_BRACE:
+                    lexer.match(L_BRACE);
+                    ret = (T) lexer.object();
+                    lexer.match(R_BRACE);
+                    break;
+                case L_BRACKET:
+                    lexer.match(L_BRACKET);
+                    ret = (T) lexer.array();
+                    lexer.match(R_BRACKET);
+                    break;
+                default:
+                    throw new IOException("Can't parse JSON document.  Incorrect first token: " + lexer.lookAhead() + ".");
+            }
         }
         return ret;
     }

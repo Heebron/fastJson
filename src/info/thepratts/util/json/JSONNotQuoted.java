@@ -21,28 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package mobi.thepratts.util.json;
+package info.thepratts.util.json;
 
 /**
  *
  * @author kpratt
  */
-class JSONEscaped<T> implements JValue<T> {
+class JSONNotQuoted<T> {
 
     private final T value;
 
-    public JSONEscaped(T value) {
+    public JSONNotQuoted(T value) {
         this.value = value;
     }
 
     @Override
     public String toString() {
-        return "\"" + JSONObject.escape(value.toString()) + "\"";
+        return value.toString();
     }
-
-    @Override
-    public T getValue() {
-        return value;
-    }
-
 }

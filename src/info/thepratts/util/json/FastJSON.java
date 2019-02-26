@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package mobi.thepratts.util.json;
+package info.thepratts.util.json;
 
 import java.io.FileReader;
 import java.io.IOException;
@@ -39,7 +39,7 @@ public class FastJSON {
     public static void main(String[] args) throws IOException {
         System.out.println("Output!");
 
-        JValue top = JSONObject.parse(new FileReader("sample.json"));
+        JSONObject top = JSONObject.parse(new FileReader("tests/sample.json"));
 
         System.out.println(top);
 

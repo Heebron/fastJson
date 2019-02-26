@@ -21,14 +21,22 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-package mobi.thepratts.util.json;
+package info.thepratts.util.json;
 
 /**
  *
  * @author kpratt
- * @param <T> type of value.
  */
-public interface JValue<T> {
+class JSONNotEscaped<T> {
 
-    public T getValue();
+    private final T value;
+
+    public JSONNotEscaped(T value) {
+        this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return "\"" + value.toString() + "\"";
+    }
 }
