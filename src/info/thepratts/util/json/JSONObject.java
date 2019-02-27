@@ -170,7 +170,7 @@ public class JSONObject extends HashMap<String, Object> {
 
             void nextString() throws IOException {
                 sb.setLength(0);
-                sb.append((char) reader.read());
+                // Look for end quote
                 while (reader.lookAhead() != '"') {
                     int ch = reader.read();
                     if (ch == -1) {
@@ -199,7 +199,7 @@ public class JSONObject extends HashMap<String, Object> {
                 token = LEXEME.map(ch);
 
                 switch (token) {
-                    case FALSE:
+                    case FALSE: // Order and lack of break stmt are correct here.
                         reader.read();
                     case NULL:
                     case TRUE:
@@ -305,9 +305,9 @@ public class JSONObject extends HashMap<String, Object> {
                             break;
                         case NUMBER:
                             if (isDecimal) {
-                                top.put(key, Double.parseDouble(value));
+                                top.put(key, Double.valueOf(value));
                             } else {
-                                top.put(key, Long.parseLong(value));
+                                top.put(key, Long.valueOf(value));
                             }
                             break;
                         default:
@@ -361,9 +361,9 @@ public class JSONObject extends HashMap<String, Object> {
                         case NUMBER:
                             match(NUMBER);
                             if (isDecimal) {
-                                list.add(Double.parseDouble(value));
+                                list.add(Double.valueOf(value));
                             } else {
-                                list.add(Long.parseLong(value));
+                                list.add(Long.valueOf(value));
                             }
                             break;
                         case COMMA:
