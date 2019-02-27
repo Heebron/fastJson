@@ -23,26 +23,32 @@
  */
 package info.thepratts.util.json;
 
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.StringJoiner;
 
 /**
  *
  * @author kpratt
  */
-class JSONArray {
+public class JSONArray extends ArrayList<Object> {
 
-    public JSONArray(List<?> value) {
-        this.value = value;
+    public JSONArray(Collection<? extends Object> c) {
+        super(c);
     }
-    List<?> value;
+
+    public JSONObject getJSONObject(int index) {
+        return (JSONObject) get(index);
+    }
+
+    public JSONArray getJSONArray(int index) {
+        return (JSONArray) get(index);
+    }
 
     @Override
     public String toString() {
         StringJoiner sj = new StringJoiner(",", "[", "]");
-
-        // Optimized output.
-        value.stream().forEach(e -> {
+        stream().forEach(e -> {
             if (e == null) {
                 sj.add("null");
             } else if (e instanceof String) {
@@ -52,9 +58,5 @@ class JSONArray {
             }
         });
         return sj.toString();
-    }
-
-    public Object getValue(int index) {
-        return value.get(index);
     }
 }

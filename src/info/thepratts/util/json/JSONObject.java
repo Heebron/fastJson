@@ -43,111 +43,38 @@ import static info.thepratts.util.json.JSONObject.LEXEME.R_BRACE;
 import static info.thepratts.util.json.JSONObject.LEXEME.R_BRACKET;
 import static info.thepratts.util.json.JSONObject.LEXEME.STRING;
 import static info.thepratts.util.json.JSONObject.LEXEME.TRUE;
-import java.util.Set;
+import java.io.StringReader;
 
 /**
  *
  * @author Ken Pratt
  */
-public class JSONObject {
+public class JSONObject extends HashMap<String, Object> {
 
-    final HashMap<String, Object> map = new HashMap<>();
-
-    public void put(String key, Object obj) {
-        map.put(key, obj);
+    public JSONObject getJSONObject(String key) {
+        return (JSONObject) super.get(key);
     }
 
-//    public void put(String key, List<? extends Object> values) {
-//        map.put(key, new JSONArray(values));
-//    }
-//
-//    public void put(String key, String value) {
-//        map.put(key, new JSONEscaped(value));
-//    }
-//
-//    public void put(String key, boolean value) {
-//        map.put(key, new JSONNotQuoted(value));
-//    }
-//
-//    public void put(String key, Number value) {
-//        map.put(key, new JSONNotQuoted(value));
-//    }
-//
-//    public void put(String key, Instant time) {
-//        map.put(key, new JSONNotEscaped(time));
-//    }
-//
-    public boolean hasKey(String key) {
-        return map.containsKey(key);
+    public JSONArray getJSONArray(String key) {
+        return (JSONArray) super.get(key);
     }
 
-    public Set<String> keySet() {
-        return map.keySet();
-    }
-
-    private <T> T walks(String path) {
-        int index = path.indexOf(".");
-        if (index == -1) {
-            if (!map.containsKey(path)) {
-                throw new IllegalArgumentException("Key does not exist.");
-            }
-            return (T) map.get(path);
-        } else {
-            T j = (T) map.get(path.substring(0, index));
-            if (j == null) {
-                throw new IllegalArgumentException("Key does not exist.");
-            }
-            if (!(j instanceof JSONObject)) {
-                throw new IllegalArgumentException("Key's value is not a JSONObject.");
-            }
-            return ((JSONObject) j).walks(path.substring(index + 1));
-        }
-    }
-
-//    public String getAsString(String key) {
-//        return walks(key).toString();
-//    }
-//
-//    public Instant getAsInstant(String key) {
-//        JValue ret = walks(key);
-//        if (ret.getValue() instanceof Instant) {
-//            return (Instant) ret.getValue();
-//        } else {
-//            return Instant.parse(ret.getValue().toString());
-//        }
-//    }
-//
-//    public Long getAsInt(String key) {
-//        JValue ret = walks(key);
-//        if (ret.getValue() instanceof Double) {
-//            return (Long) ret.getValue();
-//        } else {
-//            return Long.parseLong(ret.getValue().toString());
-//        }
-//    }
-//
-//    public Double getAsFloat(String key) {
-//        JValue ret = walks(key);
-//        if (ret.getValue() instanceof Double) {
-//            return (Double) ret.getValue();
-//        } else {
-//            return Double.parseDouble(ret.getValue().toString());
-//        }
-//    }
     public <T> T get(String key) {
-        return (T) map.get(key);
+        return (T) super.get(key);
+    }
+
+    public <T> T get(String... keys) {
+        Object v = get(keys[0]);
+        for (int i = 1; i < keys.length; i++) {
+            v = ((JSONObject) v).get(keys[i]);
+        }
+        return (T) v;
     }
 
     @Override
     public String toString() {
-        return map.entrySet().stream().map(e -> "\"" + e.getKey() + "\":"
+        return entrySet().stream().map(e -> "\"" + e.getKey() + "\":"
                 + (e.getValue() == null ? "null" : e.getValue() instanceof String ? "\"" + e.getValue() + "\"" : e.getValue().toString())).collect(Collectors.joining(",", "{", "}"));
-    }
-
-    private void insertSpaces(StringBuilder sb, int numSpaces) {
-        for (int i = 0; i < numSpaces; i++) {
-            sb.append(" ");
-        }
     }
 
     static String escape(String value) {
@@ -204,6 +131,10 @@ public class JSONObject {
         }
     };
 
+    public static <T> T parse(String data) throws IOException {
+        return parse(new StringReader(data));
+    }
+
     public static <T> T parse(final Reader doc) throws IOException {
 
         class Lexer {
@@ -225,10 +156,6 @@ public class JSONObject {
                 int lookAhead() {
                     return next;
                 }
-
-//                private void read(int i) {
-//                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-//                }
             }
 
             Lexer() throws IOException {
@@ -259,29 +186,6 @@ public class JSONObject {
                     sb.append((char) ch);
                 }
                 value = sb.toString();
-            }
-
-            private int unicode() throws IOException {
-                int total = 0;
-                for (int i = 3; i > -1; i--) {
-                    int ch = reader.read();
-                    if (ch == -1) {
-                        throw new IOException("End of document reached while parsing a unicode escape sequence.");
-                    }
-                    if (ch >= '0' && ch <= '9') {
-                        ch -= '0';
-                    } else {
-                        ch = ch | 0x20;
-                        if (ch >= 'A' && ch <= 'F') {
-                            ch -= 'A';
-                        }
-                    }
-                    if (ch < 0x0 || ch > 0xf) {
-                        throw new IOException("Invalid character in unicode escape sequence.");
-                    }
-                    total += (ch << i * 4);
-                }
-                return total;
             }
 
             void nextToken() throws IOException {
