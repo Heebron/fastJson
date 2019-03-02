@@ -23,6 +23,8 @@
  */
 package info.thepratts.util.json;
 
+import static info.thepratts.util.json.JSONObject._indent;
+import static info.thepratts.util.json.JSONObject.escape;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.StringJoiner;
@@ -32,6 +34,10 @@ import java.util.StringJoiner;
  * @author kpratt
  */
 public class JSONArray extends ArrayList<Object> {
+
+    public JSONArray() {
+        super();
+    }
 
     public JSONArray(Collection<? extends Object> c) {
         super(c);
@@ -43,6 +49,43 @@ public class JSONArray extends ArrayList<Object> {
 
     public JSONArray getJSONArray(int index) {
         return (JSONArray) get(index);
+    }
+
+    protected String _toString(int c, int indent) {
+        if (isEmpty()) {
+            return "[]";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("[\n");
+
+        forEach(v -> {
+            if (sb.length() > 2) {
+                sb.append(",\n");
+            }
+            _indent(sb, (1 + c) * indent);
+
+            if (v == null) {
+                sb.append("null");
+            } else if (v instanceof String) {
+                sb.append('"').append(escape((String) v)).append('"');
+            } else if (v instanceof JSONObject) {
+                sb.append(((JSONObject) v)._toString(c + 1, indent));
+            } else if (v instanceof JSONArray) {
+                sb.append(((JSONArray) v)._toString(c + 1, indent));
+            } else {
+                sb.append(v.toString());
+            }
+        });
+        sb.append('\n');
+        _indent(sb, c * indent);
+        sb.append(']');
+
+        return sb.toString();
+    }
+
+    public String toString(int indent) {
+        return _toString(0, indent);
     }
 
     @Override
