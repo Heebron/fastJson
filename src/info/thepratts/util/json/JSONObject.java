@@ -46,33 +46,39 @@ import static info.thepratts.util.json.JSONObject.LEXEME.TRUE;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.StringJoiner;
-import java.util.function.Supplier;
 
 /**
  *
  * @author Ken Pratt
  */
 public class JSONObject extends HashMap<String, Object> {
-    
+
     public JSONObject getJSONObject(String key) {
-        return (JSONObject) super.get(key);
+        return (JSONObject) get(key);
     }
-    
+
+    public JSONObject getJSONObject(String... key) {
+        return (JSONObject) get(key);
+    }
+
     public JSONArray getJSONArray(String key) {
-        return (JSONArray) super.get(key);
+        return (JSONArray) get(key);
     }
-    
+
+    public JSONArray getJSONArray(String... key) {
+        return (JSONArray) get(key);
+    }
+
     public <T> T get(String key) {
         return (T) super.get(key);
     }
-    
+
     public <T> Optional<T> opt(String key) {
-        return Optional.ofNullable(get(key));
+        return Optional.ofNullable((T) get(key));
     }
-    
+
     public <T> T get(String... keys) {
         Object v = get(keys[0]);
         for (int i = 1; i < keys.length; i++) {
@@ -80,57 +86,19 @@ public class JSONObject extends HashMap<String, Object> {
         }
         return (T) v;
     }
-    
+
     public <T> Optional<T> opt(String... key) {
-        return Optional.ofNullable(get(key));
+        return Optional.ofNullable((T) get(key));
     }
-    
-    protected static void _indent(StringBuilder sb, int numSpaces) {
-        while (numSpaces-- > 0) {
-            sb.append(' ');
-        }
-    }
-    
-    protected String _toString(int c, int indent) {
-        if (isEmpty()) {
-            return "{}";
-        }
-        
-        StringBuilder sb = new StringBuilder();
-        sb.append("{\n");
-        
-        entrySet().forEach(e -> {
-            if (sb.length() > 2) {
-                sb.append(",\n");
-            }
-            _indent(sb, (1 + c) * indent);
-            Object v = e.getValue();
-            if (v == null) {
-                sb.append(String.format("\"%s\":null", e.getKey()));
-            } else if (v instanceof String) {
-                sb.append(String.format("\"%s\":\"%s\"", e.getKey(), escape((String) e.getValue())));
-            } else if (v instanceof JSONObject) {
-                sb.append(String.format("\"%s\":%s", e.getKey(), ((JSONObject) v)._toString(c + 1, indent)));
-            } else if (v instanceof JSONArray) {
-                sb.append(String.format("\"%s\":%s", e.getKey(), ((JSONArray) v)._toString(c + 1, indent)));
-            } else {
-                sb.append(String.format("\"%s\":%s", e.getKey(), v.toString()));
-            }
-        });
-        sb.append('\n');
-        _indent(sb, c * indent);
-        sb.append("}");
-        return sb.toString();
-    }
-    
+
     public String toString(int indent) {
         return _toString(0, indent);
     }
-    
+
     @Override
     public String toString() {
         StringJoiner sj = new StringJoiner(",", "{", "}");
-        
+
         entrySet().forEach((e) -> {
             Object v = e.getValue();
             if (v == null) {
@@ -141,14 +109,14 @@ public class JSONObject extends HashMap<String, Object> {
                 sj.add(String.format("\"%s\":%s", e.getKey(), v.toString()));
             }
         });
-        
+
         return sj.toString();
     }
-    
+
     static String escape(String value) {
         return value.replace("\"", "\\\"");
     }
-    
+
     enum LEXEME {
 
         // The tokens of JSON
@@ -166,23 +134,23 @@ public class JSONObject extends HashMap<String, Object> {
         FALSE("Ff"),
         NULL("Nn"),
         NUMBER("-0123456789.");
-        
+
         private final String mappings;
-        
+
         LEXEME() {
             this.mappings = null;
         }
-        
+
         LEXEME(Character c) {
             this.mappings = c + "";
         }
-        
+
         LEXEME(String mappings) {
             this.mappings = mappings;
         }
-        
+
         static final LEXEME[] map = new LEXEME[126];
-        
+
         static {
             // Set up the lookup table.
             for (LEXEME t : LEXEME.values()) {
@@ -193,53 +161,53 @@ public class JSONObject extends HashMap<String, Object> {
                 }
             }
         }
-        
+
         static LEXEME map(int ch) {
             return map[ch];
         }
     };
-    
+
     public static <T> T from(String data) throws IOException {
         return from(new StringReader(data));
     }
-    
+
     public static <T> T from(InputStream data) throws IOException {
         return from(new InputStreamReader(data));
     }
-    
+
     public static <T> T from(final Reader data) throws IOException {
-        
+
         class Lexer {
-            
+
             class ReadAhead {
-                
+
                 int next;
-                
+
                 ReadAhead() throws IOException {
                     next = data.read();
                 }
-                
+
                 int read() throws IOException {
                     int ret = next;
                     next = data.read();
                     return ret;
                 }
-                
+
                 int lookAhead() {
                     return next;
                 }
             }
-            
+
             Lexer() throws IOException {
                 this.reader = new ReadAhead();
             }
-            
+
             ReadAhead reader;
             LEXEME token = BOD;
             String value;
             StringBuilder sb = new StringBuilder();
             boolean isDecimal;
-            
+
             void nextString() throws IOException {
                 sb.setLength(0);
                 // Look for end quote
@@ -259,17 +227,17 @@ public class JSONObject extends HashMap<String, Object> {
                 }
                 value = sb.toString();
             }
-            
+
             void nextToken() throws IOException {
                 int ch = reader.read();
-                
+
                 if (ch == -1) {
                     token = EOD;
                     return;
                 }
-                
+
                 token = LEXEME.map(ch);
-                
+
                 switch (token) {
                     case FALSE: // Order and lack of break stmt are correct here.
                         reader.read();
@@ -312,7 +280,7 @@ public class JSONObject extends HashMap<String, Object> {
                 // Consume trailing whitespace
                 consumeWhitepace();
             }
-            
+
             void match(LEXEME nextToken) throws IOException {
                 if (nextToken == STRING) { // This is forced.
                     nextString();
@@ -327,17 +295,17 @@ public class JSONObject extends HashMap<String, Object> {
                 // Consume trailing whitespace
                 consumeWhitepace();
             }
-            
+
             void consumeWhitepace() throws IOException {
                 while (Character.isWhitespace(reader.lookAhead())) {
                     reader.read();
                 }
             }
-            
+
             LEXEME lookAhead() {
                 return LEXEME.map(reader.lookAhead());
             }
-            
+
             JSONObject object() throws IOException {
                 JSONObject top = new JSONObject();
 
@@ -345,7 +313,7 @@ public class JSONObject extends HashMap<String, Object> {
                 if (lookAhead() == R_BRACE) {
                     return top;
                 }
-                
+
                 out:
                 for (;;) {
                     // Process key.
@@ -391,23 +359,23 @@ public class JSONObject extends HashMap<String, Object> {
                             // Should never get here.
                             throw new IOException("Invalid token: " + token);
                     }
-                    
+
                     if (lookAhead() != COMMA) {
                         break;
                     }
-                    
+
                     match(COMMA);
                 }
                 return top;
             }
-            
+
             private JSONArray array() throws IOException {
                 JSONArray list = new JSONArray();
-                
+
                 if (lookAhead() == R_BRACE) {
                     return list;
                 }
-                
+
                 out:
                 for (;;) {
                     switch (lookAhead()) {
@@ -457,7 +425,7 @@ public class JSONObject extends HashMap<String, Object> {
                 return list;
             }
         }
-        
+
         Lexer lexer = new Lexer();
         // Start with lexer at BOD;
 
@@ -482,5 +450,43 @@ public class JSONObject extends HashMap<String, Object> {
             }
         }
         return ret;
+    }
+
+    protected static void _indent(StringBuilder sb, int numSpaces) {
+        while (numSpaces-- > 0) {
+            sb.append(' ');
+        }
+    }
+
+    protected String _toString(int c, int indent) {
+        if (isEmpty()) {
+            return "{}";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("{\n");
+
+        entrySet().forEach(e -> {
+            if (sb.length() > 2) {
+                sb.append(",\n");
+            }
+            _indent(sb, (1 + c) * indent);
+            Object v = e.getValue();
+            if (v == null) {
+                sb.append(String.format("\"%s\":null", e.getKey()));
+            } else if (v instanceof String) {
+                sb.append(String.format("\"%s\":\"%s\"", e.getKey(), escape((String) e.getValue())));
+            } else if (v instanceof JSONObject) {
+                sb.append(String.format("\"%s\":%s", e.getKey(), ((JSONObject) v)._toString(c + 1, indent)));
+            } else if (v instanceof JSONArray) {
+                sb.append(String.format("\"%s\":%s", e.getKey(), ((JSONArray) v)._toString(c + 1, indent)));
+            } else {
+                sb.append(String.format("\"%s\":%s", e.getKey(), v.toString()));
+            }
+        });
+        sb.append('\n');
+        _indent(sb, c * indent);
+        sb.append("}");
+        return sb.toString();
     }
 }

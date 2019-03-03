@@ -102,7 +102,6 @@ public class JSONObjectTest {
         JSONArray doc = JSONObject.from(new FileReader("tests/test-05.json"));
         assertEquals("REPETWIRE", ((JSONObject) doc.get(0)).get("company"));
         assertEquals("REPETWIRE", doc.getJSONObject(0).get("company"));
-
         assertEquals("Delores", doc.getJSONObject(1).get("name", "first"));
         assertEquals("est", doc.getJSONObject(1).getJSONArray("tags").get(3));
         assertEquals(3L, doc.getJSONObject(2).getJSONArray("range").get(3));
@@ -127,8 +126,6 @@ public class JSONObjectTest {
     @Test
     public void testParseFileSample() throws Exception {
         JSONObject doc = JSONObject.from(new FileReader("tests/sample.json"));
-        String v =doc.toString(2);
-        System.out.println(v);
-    }
 
+    }
 }
