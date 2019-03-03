@@ -79,27 +79,27 @@ public class JSONObjectTest {
 
     @Test
     public void testParseFile03() throws Exception {
-        JSONObject doc = JSONObject.from(new FileReader("tests/test-03.json"));
+        JSONObject doc = JSONObject.from(new FileReader("samples/test-03.json"));
     }
 
     @Test
     public void testParseFile01() throws Exception {
-        JSONObject doc = JSONObject.from(new FileReader("tests/test-01.json"));
+        JSONObject doc = JSONObject.from(new FileReader("samples/test-01.json"));
     }
 
     @Test
     public void testParseFile02() throws Exception {
-        JSONObject doc = JSONObject.from(new FileReader("tests/test-02.json"));
+        JSONObject doc = JSONObject.from(new FileReader("samples/test-02.json"));
     }
 
     @Test
     public void testParseFile04() throws Exception {
-        JSONArray doc = JSONObject.from(new FileReader("tests/test-04.json"));
+        JSONArray doc = JSONObject.from(new FileReader("samples/test-04.json"));
     }
 
     @Test
     public void testParseFile05() throws Exception {
-        JSONArray doc = JSONObject.from(new FileReader("tests/test-05.json"));
+        JSONArray doc = JSONObject.from(new FileReader("samples/test-05.json"));
         assertEquals("REPETWIRE", ((JSONObject) doc.get(0)).get("company"));
         assertEquals("REPETWIRE", doc.getJSONObject(0).get("company"));
         assertEquals("Delores", doc.getJSONObject(1).get("name", "first"));
@@ -125,7 +125,7 @@ public class JSONObjectTest {
 
     @Test
     public void testParseFileSample() throws Exception {
-        JSONObject doc = JSONObject.from(new FileReader("tests/sample.json"));
+        JSONObject doc = JSONObject.from(new FileReader("samples/sample.json"));
 
     }
 }
