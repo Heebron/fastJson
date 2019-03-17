@@ -25,10 +25,7 @@ package info.thepratts.util.json;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
 import static info.thepratts.util.json.JSONObject.LEXEME.BOD;
 import static info.thepratts.util.json.JSONObject.LEXEME.COLON;
 import static info.thepratts.util.json.JSONObject.LEXEME.COMMA;
@@ -50,8 +47,10 @@ import java.util.Optional;
 import java.util.StringJoiner;
 
 /**
+ * This is not thread safe.
  *
  * @author Ken Pratt
+ *
  */
 public class JSONObject extends HashMap<String, Object> {
 
@@ -114,7 +113,37 @@ public class JSONObject extends HashMap<String, Object> {
     }
 
     static String escape(String value) {
-        return value.replace("\"", "\\\"");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < value.length(); i++) {
+            char v = value.charAt(i);
+            switch (v) {
+                case '\n':
+                    sb.append("\\n");
+                    break;
+                case '\r':
+                    sb.append("\\r");
+                    break;
+                case '\b':
+                    sb.append("\\b");
+                    break;
+                case '\f':
+                    sb.append("\\f");
+                    break;
+                case '\t':
+                    sb.append("\\t");
+                    break;
+                case '"':
+                    sb.append("\\\"");
+                    break;
+                default:
+                    if (Character.isISOControl(v)) {
+                        sb.append(String.format("\\u%04x", (int) v));
+                    } else {
+                        sb.append(v);
+                    }
+            }
+        }
+        return sb.toString();
     }
 
     enum LEXEME {

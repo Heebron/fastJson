@@ -95,7 +95,7 @@ public class JSONArray extends ArrayList<Object> {
             if (e == null) {
                 sj.add("null");
             } else if (e instanceof String) {
-                sj.add("\"" + JSONObject.escape(e.toString()) + "\"");
+                sj.add("\"" + escape(e.toString()) + "\"");
             } else {
                 sj.add(e.toString());
             }
