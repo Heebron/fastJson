@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.StringJoiner;
 
 /**
+ * This is not thread safe.
  *
  * @author Ken Pratt &lt;kenpratt@comcast.net&gt;
  */
