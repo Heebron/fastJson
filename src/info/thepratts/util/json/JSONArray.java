@@ -23,15 +23,15 @@
  */
 package info.thepratts.util.json;
 
-import static info.thepratts.util.json.JSONObject._indent;
-import static info.thepratts.util.json.JSONObject.escape;
+import static info.thepratts.util.json.JSON._indent;
+import static info.thepratts.util.json.JSON.escape;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.StringJoiner;
 
 /**
  *
- * @author kpratt
+ * @author Ken Pratt &lt;kenpratt@comcast.net&gt;
  */
 public class JSONArray extends ArrayList<Object> {
 

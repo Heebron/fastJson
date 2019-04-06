@@ -40,66 +40,66 @@ public class JSONObjectTest {
 
     @Test
     public void testParse_Reader_empty_string() throws Exception {
-        JSONObject doc = JSONObject.from("{\"name\":\"\"}");
+        JSONObject doc = JSON.from("{\"name\":\"\"}");
         assertEquals("", doc.get("name"));
     }
 
     @Test
     public void testParse_Reader_non_empty_string() throws Exception {
-        JSONObject doc = JSONObject.from("{\"name\":\"Fred\"}");
+        JSONObject doc = JSON.from("{\"name\":\"Fred\"}");
         assertEquals("Fred", doc.get("name"));
     }
 
     @Test
     public void testParse_Reader_null_string() throws Exception {
-        JSONObject doc = JSONObject.from("{\"name\":null}");
+        JSONObject doc = JSON.from("{\"name\":null}");
         assertNull(doc.get("name"));
     }
 
     @Test
     public void testParse_Reader_double() throws Exception {
-        JSONObject doc = JSONObject.from("{\"value1\":12.50,\"value2\":-12.50}");
+        JSONObject doc = JSON.from("{\"value1\":12.50,\"value2\":-12.50}");
         assertEquals(Double.valueOf(12.50), doc.get("value1"));
         assertEquals(Double.valueOf(-12.50), doc.get("value2"));
     }
 
     @Test
     public void testParse_Reader_boolean() throws Exception {
-        JSONObject doc = JSONObject.from("{\"value1\":true,\"value2\":false}");
+        JSONObject doc = JSON.from("{\"value1\":true,\"value2\":false}");
         assertTrue(doc.get("value1"));
         assertFalse(doc.get("value2"));
     }
 
     @Test
     public void testParse_Reader_long() throws Exception {
-        JSONObject doc = JSONObject.from("{\"value1\":-112,\"value2\":112}");
+        JSONObject doc = JSON.from("{\"value1\":-112,\"value2\":112}");
         assertEquals(Long.valueOf(-112), doc.get("value1"));
         assertEquals(Long.valueOf(112), doc.get("value2"));
     }
 
     @Test
     public void testParseFile03() throws Exception {
-        JSONObject doc = JSONObject.from(new FileReader("samples/test-03.json"));
+        JSONObject doc = JSON.from(new FileReader("samples/test-03.json"));
     }
 
     @Test
     public void testParseFile01() throws Exception {
-        JSONObject doc = JSONObject.from(new FileReader("samples/test-01.json"));
+        JSONObject doc = JSON.from(new FileReader("samples/test-01.json"));
     }
 
     @Test
     public void testParseFile02() throws Exception {
-        JSONObject doc = JSONObject.from(new FileReader("samples/test-02.json"));
+        JSONObject doc = JSON.from(new FileReader("samples/test-02.json"));
     }
 
     @Test
     public void testParseFile04() throws Exception {
-        JSONArray doc = JSONObject.from(new FileReader("samples/test-04.json"));
+        JSONArray doc = JSON.from(new FileReader("samples/test-04.json"));
     }
 
     @Test
     public void testParseFile05() throws Exception {
-        JSONArray doc = JSONObject.from(new FileReader("samples/test-05.json"));
+        JSONArray doc = JSON.from(new FileReader("samples/test-05.json"));
         assertEquals("REPETWIRE", ((JSONObject) doc.get(0)).get("company"));
         assertEquals("REPETWIRE", doc.getJSONObject(0).get("company"));
         assertEquals("Delores", doc.getJSONObject(1).get("name", "first"));
@@ -110,7 +110,7 @@ public class JSONObjectTest {
 
     @Test
     public void testOptional() throws Exception {
-        JSONObject doc = JSONObject.from("{\"value1\":true,\"value2\":false}");
+        JSONObject doc = JSON.from("{\"value1\":true,\"value2\":false}");
         assertTrue(doc.get("value1"));
         assertFalse(doc.get("value2"));
         assertEquals("fred", doc.opt("asd").orElse("fred"));
@@ -119,13 +119,13 @@ public class JSONObjectTest {
 
     @Test
     public void empty() throws Exception {
-        JSONObject doc = JSONObject.from("{}");
+        JSONObject doc = JSON.from("{}");
         assertTrue(doc.isEmpty());
     }
 
     @Test
     public void testParseFileSample() throws Exception {
-        JSONObject doc = JSONObject.from(new FileReader("samples/sample.json"));
+        JSONObject doc = JSON.from(new FileReader("samples/sample.json"));
 
     }
 }
