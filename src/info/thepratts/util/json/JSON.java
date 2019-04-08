@@ -140,6 +140,10 @@ public class JSON {
         return from(new StringReader(data));
     }
 
+    public static <T> T from(final InputStream data) throws IOException {
+        return from(new InputStreamReader(data));
+    }
+
     public static <T> T from(final Reader data) throws IOException {
 
         class Lexer {
