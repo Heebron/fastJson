@@ -136,15 +136,11 @@ public class JSON {
         return new JSONStream(data);
     }
 
-    public static <T> T from(final InputStream data) throws IOException {
-        return from(new BufferedReader(new InputStreamReader(data)));
-    }
-
     public static <T> T from(final String data) throws IOException {
-        return from(new BufferedReader(new StringReader(data)));
+        return from(new StringReader(data));
     }
 
-    public static <T> T from(final BufferedReader data) throws IOException {
+    public static <T> T from(final Reader data) throws IOException {
 
         class Lexer {
 
@@ -377,7 +373,7 @@ public class JSON {
                 ret = (T) lexer.array();
                 break;
             default:
-                throw new IOException("Can't parse JSON document. Must start with '{' or '['. Started with '" + (char) lexer.ch + "'.");
+                throw new IOException("Can't parse JSON document. Must start with '{' or '['.");
         }
 
         return ret;
