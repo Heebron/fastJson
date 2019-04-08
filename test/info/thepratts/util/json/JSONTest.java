@@ -63,6 +63,11 @@ public class JSONTest {
     }
 
     @Test
+    public void testTwoObjInArray() throws IOException {
+        JSONObject doc = JSON.from(new BufferedReader(new StringReader("{\"a\":[{},{}]}")));
+    }
+
+    @Test
     public void testParse_Reader_empty_string() throws Exception {
         JSONObject doc = JSON.from(new BufferedReader(new StringReader("{\"name\":\"\"}")));
         assertEquals("", doc.get("name"));

@@ -154,7 +154,8 @@ public class JSON {
              * reset stream and return 'false', else return true.
              */
             boolean testToken(final LEXEME expected) throws IOException {
-                data.mark(8192); // 8K buffer
+                consumeWhitepace();
+                data.mark(1);
                 int oldCh = ch;
                 nextToken();
                 if (token != expected) {
@@ -229,7 +230,13 @@ public class JSON {
                                 break;
                             }
                         }
-                        value = isDecimal ? Double.valueOf(sb.toString()) : Long.valueOf(sb.toString());
+
+                        if (isDecimal) {
+                            value = Double.valueOf(sb.toString());
+                        } else {
+                            value = Long.valueOf(sb.toString());
+                        }
+
                         break;
                     case STRING: // Quoted String
                         sb.setLength(0);
@@ -277,7 +284,17 @@ public class JSON {
 
                 for (;;) {
                     // Process key.
-                    nextToken(STRING, "Expected a key name in quotes.");
+                    nextToken();
+
+                    // Can be a R_BRACE for an empty object
+                    if (token == R_BRACE) {
+                        return top;
+                    }
+
+                    if (token != STRING) {
+                        throw new IOException("Expected a key name in quotes.");
+                    }
+
                     String key = (String) value;
                     nextToken(COLON, "Missing ':'.");
                     nextToken();
@@ -318,6 +335,8 @@ public class JSON {
             private JSONArray array() throws IOException {
                 JSONArray list = new JSONArray();
 
+                nextToken();
+
                 for (;;) {
                     switch (token) {
                         case STRING:
@@ -341,7 +360,7 @@ public class JSON {
                             break;
                     }
                     if (!testToken(COMMA)) {
-                        nextToken(R_BRACKET, "Expected ']'.");
+                        nextToken(R_BRACKET, "Expected ']' got " + token);
                         return list;
                     }
                 }
