@@ -136,6 +136,14 @@ public class JSON {
         return new JSONStream(data);
     }
 
+    public static <T> T from(final InputStream data) throws IOException {
+        return from(new BufferedReader(new InputStreamReader(data)));
+    }
+
+    public static <T> T from(final String data) throws IOException {
+        return from(new BufferedReader(new StringReader(data)));
+    }
+
     public static <T> T from(final BufferedReader data) throws IOException {
 
         class Lexer {
@@ -147,23 +155,6 @@ public class JSON {
 
             Lexer() throws IOException {
                 ch = data.read();
-            }
-
-            /**
-             * Read the next token and check that it is 'expected'. If not,
-             * reset stream and return 'false', else return true.
-             */
-            boolean testToken(final LEXEME expected) throws IOException {
-                consumeWhitepace();
-                data.mark(1);
-                int oldCh = ch;
-                nextToken();
-                if (token != expected) {
-                    data.reset();
-                    ch = oldCh;
-                    return false;
-                }
-                return true;
             }
 
             /**
@@ -193,6 +184,10 @@ public class JSON {
                 }
 
                 token = LEXEME.map(ch);
+
+                if (token == null) {
+                    throw new IOException("Invalid character '" + (char) ch + "' encountered while searching for next token.");
+                }
 
                 switch (token) {
                     case FALSE: // Order and lack of break stmt are correct here. This set up to consume proper # of characters.
@@ -286,13 +281,16 @@ public class JSON {
                     // Process key.
                     nextToken();
 
-                    // Can be a R_BRACE for an empty object
-                    if (token == R_BRACE) {
-                        return top;
+                    switch (token) {
+                        case COMMA:
+                            nextToken();
+                            break; // more objects
+                        case R_BRACE:
+                            return top; // all done
                     }
 
                     if (token != STRING) {
-                        throw new IOException("Expected a key name in quotes.");
+                        throw new IOException("Expected a key name in quotes but got '" + token + "'.");
                     }
 
                     String key = (String) value;
@@ -324,20 +322,15 @@ public class JSON {
                             // Should never get here.
                             throw new IOException("Invalid token: " + token);
                     }
-
-                    if (!testToken(COMMA)) {
-                        nextToken(R_BRACE, "Expected '}'.");
-                        return top;
-                    }
                 }
             }
 
             private JSONArray array() throws IOException {
                 JSONArray list = new JSONArray();
 
-                nextToken();
-
                 for (;;) {
+                    // grab the next token
+                    nextToken();
                     switch (token) {
                         case STRING:
                         case NUMBER:
@@ -358,10 +351,12 @@ public class JSON {
                         case NULL:
                             list.add(null);
                             break;
-                    }
-                    if (!testToken(COMMA)) {
-                        nextToken(R_BRACKET, "Expected ']' got " + token);
-                        return list;
+                        case COMMA:
+                            break;
+                        case R_BRACKET:
+                            return list;
+                        default:
+                            throw new IOException("Unexpected token '" + token + "' encountered while processing an array.");
                     }
                 }
             }
