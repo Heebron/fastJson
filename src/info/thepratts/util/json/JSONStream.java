@@ -23,8 +23,8 @@
  */
 package info.thepratts.util.json;
 
-import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
 
 /**
  *
@@ -32,20 +32,55 @@ import java.io.IOException;
  */
 public class JSONStream {
 
-    private final BufferedReader data;
+    private final Reader data;
 
-    protected JSONStream(final BufferedReader data) {
+    class Singleton extends Reader {
+
+        boolean escape = false;
+        private final Reader stream;
+        private boolean eod = false;
+        int depth = 0;
+
+        public Singleton(final Reader in) {
+            stream = in;
+        }
+
+        @Override
+        public int read() throws IOException {
+            if (eod == true) {
+                return -1;
+            }
+
+            int ch = stream.read();
+
+            if (escape) {
+                escape = false;
+            } else if (ch == '\\') {
+                escape = true;
+            } else if (ch == '{') {
+                depth++;
+            } else if (ch == '}' && --depth == 0) {
+                eod = true;
+            }
+            return ch;
+        }
+
+        @Override
+        public int read(char[] arg0, int arg1, int arg2) throws IOException {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+
+        @Override
+        public void close() throws IOException {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        }
+    }
+
+    protected JSONStream(final Reader data) {
         this.data = data;
     }
 
-    public boolean hasNext() throws IOException {
-        data.mark(1);
-        int c = data.read();
-        data.reset();
-        return c != -1;
-    }
-
     public Object next() throws IOException {
-        return JSON.from(data);
+        return JSON.from(new Singleton(data));
     }
 }

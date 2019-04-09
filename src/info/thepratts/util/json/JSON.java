@@ -376,10 +376,11 @@ public class JSON {
             case L_BRACKET: // []
                 ret = (T) lexer.array();
                 break;
+            case EOD:
+                return null;
             default:
                 throw new IOException("Can't parse JSON document. Must start with '{' or '['.");
         }
-
         return ret;
     }
 
@@ -388,5 +389,4 @@ public class JSON {
             sb.append(' ');
         }
     }
-
 }
