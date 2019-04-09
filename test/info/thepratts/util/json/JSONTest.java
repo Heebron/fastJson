@@ -23,7 +23,9 @@
  */
 package info.thepratts.util.json;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
@@ -185,7 +187,7 @@ public class JSONTest {
 
     @Test
     public void streamTest01() throws IOException {
-        JSONStream i = JSON.objectsFrom(new BufferedReader(new StringReader("{\"first\":true}")));
+        JSONStream i = JSON.objectsFrom(new StringReader("{\"first\":true}"));
         Object obj1 = i.next();
         assertTrue(obj1 instanceof JSONObject);
         assertTrue(((JSONObject) obj1).get("first"));
@@ -194,15 +196,57 @@ public class JSONTest {
 
     @Test
     public void streamTest02() throws IOException {
-        JSONStream i = JSON.objectsFrom(new BufferedReader(new StringReader("{\"first\":true}{\"first\":false}")));
-        Object obj1 = i.next();
-        assertTrue(obj1 instanceof JSONObject);
+        JSONStream i = JSON.objectsFrom(new StringReader("{\"first\":true}{\"first\":false}"));
+        JSONObject obj1 = i.next();
         assertTrue(((JSONObject) obj1).get("first"));
-
         obj1 = i.next();
-        assertTrue(obj1 instanceof JSONObject);
         assertFalse(((JSONObject) obj1).get("first"));
+        assertNull(i.next());
+    }
+
+    @Test
+    public void streamTest03() throws IOException {
+        JSONStream i = JSON.objectsFrom(new StringReader("  {  \"first\":true}     {\"first\":false}"));
+        JSONObject obj1 = i.next();
+        assertTrue(((JSONObject) obj1).get("first"));
+        obj1 = i.next();
+        assertFalse(((JSONObject) obj1).get("first"));
+        assertNull(i.next());
+    }
+
+    @Test
+    public void streamTest04() throws IOException {
+        JSONStream i = JSON.objectsFrom(new StringReader(""));
+        assertNull(i.next());
+    }
+
+    @Test
+    public void streamTest05() throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        append(new FileReader("samples/test-01.json"), out);
+        append(new FileReader("samples/test-02.json"), out);
+        append(new FileReader("samples/test-03.json"), out);
+        append(new FileReader("samples/sample.json"), out);
+        JSONStream i = JSON.objectsFrom(new StringReader(out.toString()));
+        JSONObject obj = i.next();
+        assertTrue((Long) (((JSONObject) ((JSONArray) obj.get("x", "inputs")).get(0)).get("sequence")) == 4294967293l);
+
+        obj = i.next();
+        assertEquals(obj.get("name"), "");
+
+        obj = i.next();
+        assertEquals(obj.get("op"), "utx");
+
+        obj = i.next();
+        assertEquals(((JSONObject) ((JSONArray) obj.get("transactions")).get(3)).get("tx_hash"), "375b279a3cef235127ea74e6014bc7ced9a32f9175fa8cb4f9e47e0f11942aa2");
 
         assertNull(i.next());
+    }
+
+    private void append(FileReader fileReader, ByteArrayOutputStream out) throws IOException {
+        int ch;
+        while (-1 != (ch = fileReader.read())) {
+            out.write(ch);
+        }
     }
 }

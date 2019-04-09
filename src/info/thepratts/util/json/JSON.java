@@ -132,7 +132,7 @@ public class JSON {
         }
     };
 
-    public static JSONStream objectsFrom(final BufferedReader data) throws IOException {
+    public static JSONStream objectsFrom(final Reader data) throws IOException {
         return new JSONStream(data);
     }
 

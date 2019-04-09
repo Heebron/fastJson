@@ -80,7 +80,7 @@ public class JSONStream {
         this.data = data;
     }
 
-    public Object next() throws IOException {
+    public JSONObject next() throws IOException {
         return JSON.from(new Singleton(data));
     }
 }
