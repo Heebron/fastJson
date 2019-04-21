@@ -36,7 +36,6 @@ import static info.thepratts.util.json.JSON.LEXEME.R_BRACKET;
 import static info.thepratts.util.json.JSON.LEXEME.STRING;
 import static info.thepratts.util.json.JSON.LEXEME.TRUE;
 import static info.thepratts.util.json.JSON.LEXEME.FALSE;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
