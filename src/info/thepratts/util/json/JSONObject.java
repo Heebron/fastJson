@@ -30,6 +30,10 @@ import java.util.Optional;
 import java.util.StringJoiner;
 
 /**
+ * Represents a JSON object as a veneer on top of a Hash Map. This contains
+ * convenience methods to read JSON related values based on a hash key and to
+ * coerce number formats for easy processing.
+ * <p>
  * This is not thread safe.
  *
  * @author Ken Pratt &lt;kenpratt@comcast.net&gt;
@@ -53,10 +57,74 @@ public class JSONObject extends HashMap<String, Object> {
         return (JSONArray) get(key);
     }
 
+    /**
+     * Coerces any recognized number to a Long.
+     *
+     * @param key name of key
+     * @return the value as a Java Long. This may involve rounding or
+     * truncation.
+     */
+    public long getLong(String key) {
+        Number n = (Number) super.get(key);
+        return n.longValue();
+    }
+
+    /**
+     * Coerces any recognized number to an Int.
+     *
+     * @param key name of key
+     * @return the value as a Java Integer. This may involve rounding or
+     * truncation.
+     */
+    public int getInt(String key) {
+        Number n = (Number) super.get(key);
+        return n.intValue();
+    }
+
+    /**
+     * Coerces any recognized number to a Float.
+     *
+     * @param key name of key
+     * @return the value as a Java Float. This may involve rounding or
+     * truncation.
+     */
+    public float getFloat(String key) {
+        Number n = (Number) super.get(key);
+        return n.floatValue();
+    }
+
+    /**
+     * Coerces any recognized number to a Double.
+     *
+     * @param key name of key
+     * @return the value as a Java Double.
+     */
+    public double getDouble(String key) {
+        Number n = (Number) super.get(key);
+        return n.doubleValue();
+    }
+
+    /**
+     * Returns the value mapped to key.
+     *
+     * @param <T> the Java type of the object mapped to key
+     * @param key name of key
+     * @return the value mapped to key
+     */
     public <T> T get(String key) {
         return (T) super.get(key);
     }
 
+    /**
+     * Returns an Optional containing the value of type T mapped to key.
+     *
+     * @param <T> the Java type of the object mapped to key
+     * @param key name of key
+     * @return the value mapped to key
+     * @see
+     * <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html">Java
+     * Optional</a>
+     */
     public <T> Optional<T> opt(String key) {
         return Optional.ofNullable((T) get(key));
     }
@@ -94,7 +162,6 @@ public class JSONObject extends HashMap<String, Object> {
 
         return sj.toString();
     }
-
 
     protected String _toString(int c, int indent) {
         if (isEmpty()) {
