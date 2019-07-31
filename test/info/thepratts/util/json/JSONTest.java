@@ -29,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.function.Function;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -241,6 +242,26 @@ public class JSONTest {
         assertEquals(((JSONObject) ((JSONArray) obj.get("transactions")).get(3)).get("tx_hash"), "375b279a3cef235127ea74e6014bc7ced9a32f9175fa8cb4f9e47e0f11942aa2");
 
         assertNull(i.next());
+    }
+
+    Function<Number, Integer> asInt = v -> ((Number) v).intValue();
+
+    @Test
+    public void testNumberInt() throws IOException {
+        JSONObject obj = JSON.from("{\"number\":1234}");
+
+        int value = obj.opt("number").map(v -> ((Number) v).intValue()).get();
+
+        assertEquals(1234, value);
+    }
+
+    @Test
+    public void testNumberLong() throws IOException {
+        JSONObject obj = JSON.from("{\"number\":1234}");
+
+        long value = obj.opt("number").map(v -> ((Number) v).longValue()).get();
+
+        assertEquals(1234, value);
     }
 
     private void append(FileReader fileReader, ByteArrayOutputStream out) throws IOException {

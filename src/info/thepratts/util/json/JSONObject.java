@@ -111,6 +111,7 @@ public class JSONObject extends HashMap<String, Object> {
      * @param key name of key
      * @return the value mapped to key
      */
+    @SuppressWarnings("unchecked")
     public <T> T get(String key) {
         return (T) super.get(key);
     }
@@ -125,10 +126,12 @@ public class JSONObject extends HashMap<String, Object> {
      * <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html">Java
      * Optional</a>
      */
+    @SuppressWarnings("unchecked")
     public <T> Optional<T> opt(String key) {
         return Optional.ofNullable((T) get(key));
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T get(String... keys) {
         Object v = get(keys[0]);
         for (int i = 1; i < keys.length; i++) {
@@ -137,6 +140,7 @@ public class JSONObject extends HashMap<String, Object> {
         return (T) v;
     }
 
+    @SuppressWarnings("unchecked")
     public <T> Optional<T> opt(String... key) {
         return Optional.ofNullable((T) get(key));
     }

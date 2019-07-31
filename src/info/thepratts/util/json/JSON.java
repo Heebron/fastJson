@@ -143,6 +143,7 @@ public class JSON {
         return from(new InputStreamReader(data));
     }
 
+    @SuppressWarnings("unchecked")
     public static <T> T from(final Reader data) throws IOException {
 
         class Lexer {
