@@ -33,23 +33,16 @@ import java.util.StringJoiner;
  * This is not thread safe.
  *
  * @author Ken Pratt &lt;kenpratt@comcast.net&gt;
+ * @param <T> type of contained elements
  */
-public class JSONArray extends ArrayList<Object> {
+public class JSONArray<T> extends ArrayList<T> {
 
     public JSONArray() {
         super();
     }
 
-    public JSONArray(Collection<? extends Object> c) {
+    public JSONArray(Collection<? extends T> c) {
         super(c);
-    }
-
-    public JSONObject getJSONObject(int index) {
-        return (JSONObject) get(index);
-    }
-
-    public JSONArray getJSONArray(int index) {
-        return (JSONArray) get(index);
     }
 
     protected String _toString(int c, int indent) {

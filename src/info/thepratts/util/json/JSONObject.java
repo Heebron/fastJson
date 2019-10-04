@@ -49,12 +49,14 @@ public class JSONObject extends HashMap<String, Object> {
         return (JSONObject) get(key);
     }
 
-    public JSONArray getJSONArray(String key) {
-        return (JSONArray) get(key);
+    @SuppressWarnings("unchecked")
+    public <T> JSONArray<T> getJSONArray(String key) {
+        return (JSONArray<T>) get(key);
     }
 
-    public JSONArray getJSONArray(String... key) {
-        return (JSONArray) get(key);
+    @SuppressWarnings("unchecked")
+    public <T> JSONArray<T> getJSONArray(String... key) {
+        return (JSONArray<T>) get(key);
     }
 
     /**

@@ -23,8 +23,6 @@
  */
 package info.thepratts.util.json;
 
-import java.io.BufferedOutputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -128,14 +126,15 @@ public class JSONTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void testParseFile05() throws Exception {
-        JSONArray doc = JSON.from(new FileReader("samples/test-05.json"));
+        JSONArray<JSONObject> doc = JSON.from(new FileReader("samples/test-05.json"));
         assertEquals("REPETWIRE", ((JSONObject) doc.get(0)).get("company"));
-        assertEquals("REPETWIRE", doc.getJSONObject(0).get("company"));
-        assertEquals("Delores", doc.getJSONObject(1).get("name", "first"));
-        assertEquals("est", doc.getJSONObject(1).getJSONArray("tags").get(3));
-        assertEquals(3L, doc.getJSONObject(2).getJSONArray("range").get(3));
-        assertEquals("Tammi Davis", doc.getJSONObject(2).getJSONArray("friends").getJSONObject(1).get("name"));
+        assertEquals("REPETWIRE", doc.get(0).get("company"));
+        assertEquals("Delores", doc.get(1).get("name", "first"));
+        assertEquals("est", doc.get(1).getJSONArray("tags").get(3));
+        assertEquals(3L, doc.get(2).getJSONArray("range").get(3));
+        assertEquals("Tammi Davis", ((JSONArray<JSONObject>) doc.get(2).get("friends")).get(1).get("name"));
     }
 
     @Test
