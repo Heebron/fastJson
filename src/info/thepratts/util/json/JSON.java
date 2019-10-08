@@ -190,7 +190,7 @@ public class JSON {
                 }
 
                 switch (token) {
-                    case FALSE: // Order and lack of break stmt are correct here. This set up to consume proper # of characters.
+                    case FALSE: // Order and lack of break stmt are correct here. This is set up to consume proper # of characters.
                         data.read();
                     case TRUE:
                     case NULL:
