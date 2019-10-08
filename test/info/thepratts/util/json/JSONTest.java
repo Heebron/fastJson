@@ -132,8 +132,8 @@ public class JSONTest {
         assertEquals("REPETWIRE", ((JSONObject) doc.get(0)).get("company"));
         assertEquals("REPETWIRE", doc.get(0).get("company"));
         assertEquals("Delores", doc.get(1).get("name", "first"));
-        assertEquals("est", doc.get(1).getJSONArray("tags").get(3));
-        assertEquals(3L, doc.get(2).getJSONArray("range").get(3));
+        assertEquals("est", ((JSONArray) doc.get(1).get("tags")).get(3));
+        assertEquals(3L, ((JSONArray) doc.get(2).get("range")).get(3));
         assertEquals("Tammi Davis", ((JSONArray<JSONObject>) doc.get(2).get("friends")).get(1).get("name"));
     }
 
@@ -261,6 +261,10 @@ public class JSONTest {
         long value = obj.opt("number").map(v -> ((Number) v).longValue()).get();
 
         assertEquals(1234, value);
+
+        long value2 = obj.opt("number").map(v -> (long) v).get();
+
+        assertEquals(1234, value2);
     }
 
     private void append(FileReader fileReader, ByteArrayOutputStream out) throws IOException {
