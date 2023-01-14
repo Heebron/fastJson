@@ -23,24 +23,9 @@
  */
 package info.thepratts.util.json;
 
-import static info.thepratts.util.json.JSON.LEXEME.BOD;
-import static info.thepratts.util.json.JSON.LEXEME.COLON;
-import static info.thepratts.util.json.JSON.LEXEME.COMMA;
-import static info.thepratts.util.json.JSON.LEXEME.EOD;
-import static info.thepratts.util.json.JSON.LEXEME.L_BRACE;
-import static info.thepratts.util.json.JSON.LEXEME.L_BRACKET;
-import static info.thepratts.util.json.JSON.LEXEME.NULL;
-import static info.thepratts.util.json.JSON.LEXEME.NUMBER;
-import static info.thepratts.util.json.JSON.LEXEME.R_BRACE;
-import static info.thepratts.util.json.JSON.LEXEME.R_BRACKET;
-import static info.thepratts.util.json.JSON.LEXEME.STRING;
-import static info.thepratts.util.json.JSON.LEXEME.TRUE;
-import static info.thepratts.util.json.JSON.LEXEME.FALSE;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringReader;
+import java.io.*;
+
+import static info.thepratts.util.json.JSON.LEXEME.*;
 
 /**
  *
@@ -53,30 +38,19 @@ public class JSON {
         for (int i = 0; i < value.length(); i++) {
             char v = value.charAt(i);
             switch (v) {
-                case '\n':
-                    sb.append("\\n");
-                    break;
-                case '\r':
-                    sb.append("\\r");
-                    break;
-                case '\b':
-                    sb.append("\\b");
-                    break;
-                case '\f':
-                    sb.append("\\f");
-                    break;
-                case '\t':
-                    sb.append("\\t");
-                    break;
-                case '"':
-                    sb.append("\\\"");
-                    break;
-                default:
+                case '\n' -> sb.append("\\n");
+                case '\r' -> sb.append("\\r");
+                case '\b' -> sb.append("\\b");
+                case '\f' -> sb.append("\\f");
+                case '\t' -> sb.append("\\t");
+                case '"' -> sb.append("\\\"");
+                default -> {
                     if (Character.isISOControl(v)) {
                         sb.append(String.format("\\u%04x", (int) v));
                     } else {
                         sb.append(v);
                     }
+                }
             }
         }
         return sb.toString();
@@ -129,9 +103,9 @@ public class JSON {
         static LEXEME map(int ch) {
             return map[ch];
         }
-    };
+    }
 
-    public static JSONStream objectsFrom(final Reader data) throws IOException {
+    public static JSONStream objectsFrom(final Reader data) {
         return new JSONStream(data);
     }
 
@@ -150,7 +124,7 @@ public class JSON {
 
             int ch;
             Object value;
-            StringBuilder sb = new StringBuilder();
+            final StringBuilder sb = new StringBuilder();
             LEXEME token = BOD;
 
             Lexer() throws IOException {
@@ -160,13 +134,12 @@ public class JSON {
             /**
              * Consume the entire token. 'token' is left with the token type and
              * value its 'value' if it is a string or a number. If the next
-             * token is not 'expected', then throw an exception with the given
-             * message.
+             * token is not 'expected', then throw an exception with note.
              */
-            void nextToken(final LEXEME expected, final String message) throws IOException {
+            void nextTokenColonCheck() throws IOException {
                 nextToken();
-                if (token != expected) {
-                    throw new IOException(message);
+                if (token != LEXEME.COLON) {
+                    throw new IOException("Missing ':'.");
                 }
             }
 
@@ -176,7 +149,7 @@ public class JSON {
              */
             void nextToken() throws IOException {
                 // Eat up whitespace
-                consumeWhitepace();
+                consumeWhitespace();
 
                 if (ch == -1) {
                     token = EOD;
@@ -268,7 +241,7 @@ public class JSON {
 
             }
 
-            void consumeWhitepace() throws IOException {
+            void consumeWhitespace() throws IOException {
                 while (Character.isWhitespace(ch)) {
                     ch = data.read();
                 }
@@ -282,11 +255,11 @@ public class JSON {
                     nextToken();
 
                     switch (token) {
-                        case COMMA:
-                            nextToken();
-                            break; // more objects
-                        case R_BRACE:
+                        case COMMA -> nextToken();
+                        // more objects
+                        case R_BRACE -> {
                             return top; // all done
+                        }
                     }
 
                     if (token != STRING) {
@@ -294,33 +267,22 @@ public class JSON {
                     }
 
                     String key = (String) value;
-                    nextToken(COLON, "Missing ':'.");
+                    nextTokenColonCheck();
                     nextToken();
 
                     // Process value.
                     switch (token) {
-                        case TRUE:
-                            top.put(key, true);
-                            break;
-                        case FALSE:
-                            top.put(key, false);
-                            break;
-                        case STRING:
-                        case NUMBER:
-                            top.put(key, value);
-                            break;
-                        case L_BRACKET: // []
-                            top.put(key, array());
-                            break;
-                        case L_BRACE: // {}
-                            top.put(key, object());
-                            break;
-                        case NULL:
-                            top.put(key, null);
-                            break;
-                        default:
+                        case TRUE -> top.put(key, true);
+                        case FALSE -> top.put(key, false);
+                        case STRING, NUMBER -> top.put(key, value);
+                        case L_BRACKET -> // []
+                                top.put(key, array());
+                        case L_BRACE -> // {}
+                                top.put(key, object());
+                        case NULL -> top.put(key, null);
+                        default ->
                             // Should never get here.
-                            throw new IOException("Invalid token: " + token);
+                                throw new IOException("Invalid token: " + token);
                     }
                 }
             }
@@ -370,16 +332,14 @@ public class JSON {
         lexer.nextToken();
         // Do we have an object or an array?
         switch (lexer.token) {
-            case L_BRACE: // {}
-                ret = (T) lexer.object();
-                break;
-            case L_BRACKET: // []
-                ret = (T) lexer.array();
-                break;
-            case EOD:
+            case L_BRACE -> // {}
+                    ret = (T) lexer.object();
+            case L_BRACKET -> // []
+                    ret = (T) lexer.array();
+            case EOD -> {
                 return null;
-            default:
-                throw new IOException("Can't parse JSON document. Must start with '{' or '['.");
+            }
+            default -> throw new IOException("Can't parse JSON document. Must start with '{' or '['.");
         }
         return ret;
     }
