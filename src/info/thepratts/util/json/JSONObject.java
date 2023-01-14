@@ -23,11 +23,12 @@
  */
 package info.thepratts.util.json;
 
-import static info.thepratts.util.json.JSON._indent;
-import static info.thepratts.util.json.JSON.escape;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.StringJoiner;
+
+import static info.thepratts.util.json.JSON._indent;
+import static info.thepratts.util.json.JSON.escape;
 
 /**
  * Represents a JSON object as a veneer on top of a Hash Map. This contains
@@ -63,23 +64,23 @@ public class JSONObject extends HashMap<String, Object> {
      * <a href="https://docs.oracle.com/javase/8/docs/api/java/util/Optional.html">Java
      * Optional</a>
      */
-    @SuppressWarnings("unchecked")
     public <T> Optional<T> opt(String key) {
-        return Optional.ofNullable((T) get(key));
+        return Optional.ofNullable(get(key));
     }
 
     @SuppressWarnings("unchecked")
     public <T> T get(String... keys) {
         Object v = get(keys[0]);
+        if (v == null)
+            return null;
         for (int i = 1; i < keys.length; i++) {
             v = ((JSONObject) v).get(keys[i]);
         }
         return (T) v;
     }
 
-    @SuppressWarnings("unchecked")
     public <T> Optional<T> opt(String... key) {
-        return Optional.ofNullable((T) get(key));
+        return Optional.ofNullable(get(key));
     }
 
     public String toString(int indent) {
@@ -90,14 +91,13 @@ public class JSONObject extends HashMap<String, Object> {
     public String toString() {
         StringJoiner sj = new StringJoiner(",", "{", "}");
 
-        entrySet().forEach((e) -> {
-            Object v = e.getValue();
+        forEach((key, v) -> {
             if (v == null) {
-                sj.add(String.format("\"%s\":null", e.getKey()));
+                sj.add(String.format("\"%s\":null", key));
             } else if (v instanceof String) {
-                sj.add(String.format("\"%s\":\"%s\"", e.getKey(), escape((String) e.getValue())));
+                sj.add(String.format("\"%s\":\"%s\"", key, escape((String) v)));
             } else {
-                sj.add(String.format("\"%s\":%s", e.getKey(), v.toString()));
+                sj.add(String.format("\"%s\":%s", key, v));
             }
         });
 
@@ -112,22 +112,21 @@ public class JSONObject extends HashMap<String, Object> {
         StringBuilder sb = new StringBuilder();
         sb.append("{\n");
 
-        entrySet().forEach(e -> {
+        forEach((key, v) -> {
             if (sb.length() > 2) {
                 sb.append(",\n");
             }
             _indent(sb, (1 + c) * indent);
-            Object v = e.getValue();
             if (v == null) {
-                sb.append(String.format("\"%s\":null", e.getKey()));
+                sb.append(String.format("\"%s\":null", key));
             } else if (v instanceof String) {
-                sb.append(String.format("\"%s\":\"%s\"", e.getKey(), escape((String) e.getValue())));
+                sb.append(String.format("\"%s\":\"%s\"", key, escape((String) v)));
             } else if (v instanceof JSONObject) {
-                sb.append(String.format("\"%s\":%s", e.getKey(), ((JSONObject) v)._toString(c + 1, indent)));
+                sb.append(String.format("\"%s\":%s", key, ((JSONObject) v)._toString(c + 1, indent)));
             } else if (v instanceof JSONArray) {
-                sb.append(String.format("\"%s\":%s", e.getKey(), ((JSONArray) v)._toString(c + 1, indent)));
+                sb.append(String.format("\"%s\":%s", key, ((JSONArray<?>) v)._toString(c + 1, indent)));
             } else {
-                sb.append(String.format("\"%s\":%s", e.getKey(), v.toString()));
+                sb.append(String.format("\"%s\":%s", key, v));
             }
         });
         sb.append('\n');

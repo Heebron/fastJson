@@ -23,11 +23,12 @@
  */
 package info.thepratts.util.json;
 
-import static info.thepratts.util.json.JSON._indent;
-import static info.thepratts.util.json.JSON.escape;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.StringJoiner;
+
+import static info.thepratts.util.json.JSON._indent;
+import static info.thepratts.util.json.JSON.escape;
 
 /**
  * This is not thread safe.
@@ -66,9 +67,9 @@ public class JSONArray<T> extends ArrayList<T> {
             } else if (v instanceof JSONObject) {
                 sb.append(((JSONObject) v)._toString(c + 1, indent));
             } else if (v instanceof JSONArray) {
-                sb.append(((JSONArray) v)._toString(c + 1, indent));
+                sb.append(((JSONArray<?>) v)._toString(c + 1, indent));
             } else {
-                sb.append(v.toString());
+                sb.append(v);
             }
         });
         sb.append('\n');
@@ -85,7 +86,7 @@ public class JSONArray<T> extends ArrayList<T> {
     @Override
     public String toString() {
         StringJoiner sj = new StringJoiner(",", "[", "]");
-        stream().forEach(e -> {
+        this.forEach(e -> {
             if (e == null) {
                 sj.add("null");
             } else if (e instanceof String) {

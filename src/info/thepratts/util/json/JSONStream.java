@@ -34,7 +34,7 @@ public class JSONStream {
 
     private final Reader data;
 
-    class Singleton extends Reader {
+    static class Singleton extends Reader {
 
         boolean escape = false;
         private final Reader stream;
@@ -47,7 +47,7 @@ public class JSONStream {
 
         @Override
         public int read() throws IOException {
-            if (eod == true) {
+            if (eod) {
                 return -1;
             }
 
@@ -66,12 +66,12 @@ public class JSONStream {
         }
 
         @Override
-        public int read(char[] arg0, int arg1, int arg2) throws IOException {
+        public int read(char[] arg0, int arg1, int arg2) {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
 
         @Override
-        public void close() throws IOException {
+        public void close() {
             throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
